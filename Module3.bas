@@ -22,3 +22,9 @@ Sub TaBortAllaHuvudboksflikar()
     Next i
 End Sub
 
+Sub TestWorksheetChange()
+    ' Ändra en cell i kolumn Konto (kolumn 1) efter rad 1 för att trigga Worksheet_Change
+    Sheet5.Cells(3, ColumnNumbers.Konto).Value = "Testkonto"
+End Sub
+
+

@@ -44,9 +44,6 @@ Public Const Kontoförändringar_s As String = "Kontoförändringar"
 Public Const Beräkningar_s As String = "Beräkningar"
 
 
-
-
-
 Sub InitializeAccounts()
     Dim wsKontoplan As Worksheet
     Dim accountRow As Long

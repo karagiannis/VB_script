@@ -199,8 +199,6 @@ Function columnLetter(columnNumber As Integer) As String
     
     columnLetter = columnBokstäver
 End Function
-
-
 Private Sub UpdateDiff()
     Dim lastRow As Long
     Dim diffRow As Long
@@ -209,6 +207,7 @@ Private Sub UpdateDiff()
     Dim debetColLetter As String
     Dim kreditColLetter As String
     
+    ' Bestäm sista ifyllda raden i kolumn 1 (antagande att kolumn 1 alltid har data)
     lastRow = Me.Cells(Me.Rows.Count, 1).End(xlUp).Row
     diffRow = lastRow + 10
     
@@ -216,14 +215,17 @@ Private Sub UpdateDiff()
     debetColLetter = columnLetter(ColumnNumbers.debet)
     kreditColLetter = columnLetter(ColumnNumbers.kredit)
     
-    ' Använd kolumnbokstäverna i Range-funktionen
+    ' Använd kolumnbokstäverna i Range-funktionen för att summera debet och kredit
     debetSum = Application.WorksheetFunction.Sum(Me.Range(debetColLetter & "2:" & debetColLetter & lastRow))
     kreditSum = Application.WorksheetFunction.Sum(Me.Range(kreditColLetter & "2:" & kreditColLetter & lastRow))
     
+    ' Ta bort tidigare diff-beräkningar från rad 9 under sista ifyllda raden
+    Me.Rows(lastRow + 9).ClearContents
+    
+    ' Lägg till ny diff-beräkning på rad 10 under sista ifyllda raden
     Me.Cells(diffRow, ColumnNumbers.diff - 1).Value = "Diff"
     Me.Cells(diffRow, ColumnNumbers.diff).Value = debetSum - kreditSum
 End Sub
-
 
 ' Hämta benämningen för ett konto
 Private Function GetBenamning(ws As Worksheet, kontoNummer As String) As String

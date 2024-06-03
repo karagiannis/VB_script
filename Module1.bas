@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module1"
-Sub Button1_Click()
+    Sub Button1_Click()
     Debug.Print "Button click"
     BokforingKnapp_Click
 End Sub
@@ -36,7 +36,7 @@ Sub BokforingKnapp_Click()
 End Sub
 
 
-Sub UppdateraHuvudbok(kontoNummer As String, radNummer As Long)
+Sub UppdateraHuvudbok2(kontoNummer As String, radNummer As Long)
     Dim wsAccount As Worksheet
     Set wsAccount = ThisWorkbook.Sheets(kontoNummer)
     Debug.Print "Arbetsblad satt till: " & wsAccount.Name
@@ -100,7 +100,49 @@ Sub UppdateraHuvudbok(kontoNummer As String, radNummer As Long)
     
     Debug.Print "UppdateraHuvudbok avslutas för konto: " & kontoNummer & " och radnummer: " & radNummer
 End Sub
-Sub UppdateraVerifikationslista()
+
+Sub UppdateraHuvudbok(kontoNummer As String, radNummer As Long)
+    Dim wsAccount As Worksheet
+    Set wsAccount = ThisWorkbook.Sheets(kontoNummer)
+    Debug.Print "Arbetsblad satt till: " & wsAccount.Name
+    
+    ' Hämta senaste saldo
+    Dim saldo As Double
+    saldo = wsAccount.Cells(wsAccount.Cells(wsAccount.Rows.Count, 1).End(xlUp).Row, ColumnNumbers.saldo).Value
+    Debug.Print "Hämtat saldo: " & saldo
+    
+    ' Beräkna nytt saldo
+    Dim nyttSaldo As Double
+    nyttSaldo = saldo + Sheet5.Cells(radNummer, ColumnNumbers.debet).Value - Sheet5.Cells(radNummer, ColumnNumbers.kredit).Value
+    
+    ' Hitta nästa lediga rad i huvudboken
+    Dim newRow As Long
+    newRow = wsAccount.Cells(wsAccount.Rows.Count, 1).End(xlUp).Row + 1
+    
+    ' Infoga data i huvudboken
+    With wsAccount
+        .Cells(newRow, ColumnNumbers.Konto).Value = kontoNummer
+        .Cells(newRow, ColumnNumbers.Benämning).Value = Sheet5.Cells(radNummer, ColumnNumbers.Benämning).Value
+        .Cells(newRow, ColumnNumbers.verifikationsserie).Value = Sheet5.Cells(radNummer, ColumnNumbers.verifikationsserie).Value
+        .Cells(newRow, ColumnNumbers.verNr).Value = Sheet5.Cells(radNummer, ColumnNumbers.verNr).Value
+        .Cells(newRow, ColumnNumbers.systemdatum).Value = Format(Now, "yyyy-mm-dd hh:mm:ss")
+        .Cells(newRow, ColumnNumbers.registreringsdatum).Value = Sheet5.Cells(radNummer, ColumnNumbers.registreringsdatum).Value
+        .Cells(newRow, ColumnNumbers.kostnadsställe).Value = Sheet5.Cells(radNummer, ColumnNumbers.kostnadsställe).Value
+        .Cells(newRow, ColumnNumbers.projekt).Value = Sheet5.Cells(radNummer, ColumnNumbers.projekt).Value
+        .Cells(newRow, ColumnNumbers.verifikationstext).Value = Sheet5.Cells(radNummer, ColumnNumbers.verifikationstext).Value
+        .Cells(newRow, ColumnNumbers.transaktionsinfo).Value = Sheet5.Cells(radNummer, ColumnNumbers.transaktionsinfo).Value
+        .Cells(newRow, ColumnNumbers.debet).Value = Sheet5.Cells(radNummer, ColumnNumbers.debet).Value
+        .Cells(newRow, ColumnNumbers.kredit).Value = Sheet5.Cells(radNummer, ColumnNumbers.kredit).Value
+        .Cells(newRow, ColumnNumbers.saldo).Value = nyttSaldo
+
+        ' Använd funktionen för att kopiera hyperlänken
+        KopieraHyperlänk Sheet5.Cells(radNummer, ColumnNumbers.bokföringsunderlag), .Cells(newRow, ColumnNumbers.bokföringsunderlag)
+    End With
+    
+    Debug.Print "UppdateraHuvudbok avslutas för konto: " & kontoNummer & " och radnummer: " & radNummer
+End Sub
+
+Sub UppdateraVerifikationslista2()
     Dim verifikationsserie As String
     Dim verNr As String
     Dim systemdatum As String
@@ -147,6 +189,9 @@ Sub UppdateraVerifikationslista()
         diff = Sheet5.Cells(i, ColumnNumbers.diff).Value
         bokföringsunderlag = Sheet5.Cells(i, ColumnNumbers.bokföringsunderlag).Value
         kontoförändringar = Sheet5.Cells(i, ColumnNumbers.kontoförändringar).Value
+        ' Dim bokforingsunderlag As String
+        ' MsgBox bokforingsunderlag
+
         
         Debug.Print "Hämtat data: verifikationsserie=" & verifikationsserie & ", verNr=" & verNr & _
                 ", systemdatum=" & systemdatum & ", registreringsdatum=" & registreringsdatum & _
@@ -192,6 +237,58 @@ Sub UppdateraVerifikationslista()
         newRow = newRow + 1
     Next i
 End Sub
+Sub UppdateraVerifikationslista()
+    Dim wsVerifikationslista As Worksheet
+    Set wsVerifikationslista = ThisWorkbook.Sheets("Verifikationslista")
+    
+    ' Hitta nästa lediga rad i Verifikationslistan
+    Dim newRow As Long
+    newRow = wsVerifikationslista.Cells(wsVerifikationslista.Rows.Count, 1).End(xlUp).Row + 1
+    Debug.Print "Den funna lediga raden är i verifikationslistan är:" & newRow
+    
+    ' Hitta sista raden i Bokföring
+    Dim lastRow As Long
+    lastRow = Sheet5.Cells(Sheet5.Rows.Count, 1).End(xlUp).Row
+    Debug.Print "Den sista raden i Bokföring är:" & lastRow
+    
+    ' Samla data för varje rad
+    Dim i As Long, j As Long
+    For i = 2 To lastRow
+        ' Infoga data i Verifikationslistan
+        With wsVerifikationslista
+            .Cells(newRow, ColumnNumbers.Konto).Value = Sheet5.Cells(i, ColumnNumbers.Konto).Value
+            .Cells(newRow, ColumnNumbers.Benämning).Value = Sheet5.Cells(i, ColumnNumbers.Benämning).Value
+            .Cells(newRow, ColumnNumbers.Beskrivning).Value = Sheet5.Cells(i, ColumnNumbers.Beskrivning).Value
+            .Cells(newRow, ColumnNumbers.verifikationsserie).Value = Sheet5.Cells(i, ColumnNumbers.verifikationsserie).Value
+            .Cells(newRow, ColumnNumbers.verNr).Value = Sheet5.Cells(i, ColumnNumbers.verNr).Value
+            .Cells(newRow, ColumnNumbers.systemdatum).Value = Format(Now, "yyyy-mm-dd hh:mm:ss")
+            .Cells(newRow, ColumnNumbers.registreringsdatum).Value = Sheet5.Cells(i, ColumnNumbers.registreringsdatum).Value
+            .Cells(newRow, ColumnNumbers.kostnadsställe).Value = Sheet5.Cells(i, ColumnNumbers.kostnadsställe).Value
+            .Cells(newRow, ColumnNumbers.projekt).Value = Sheet5.Cells(i, ColumnNumbers.projekt).Value
+            .Cells(newRow, ColumnNumbers.verifikationstext).Value = Sheet5.Cells(i, ColumnNumbers.verifikationstext).Value
+            .Cells(newRow, ColumnNumbers.transaktionsinfo).Value = Sheet5.Cells(i, ColumnNumbers.transaktionsinfo).Value
+            .Cells(newRow, ColumnNumbers.debet).Value = Sheet5.Cells(i, ColumnNumbers.debet).Value
+            .Cells(newRow, ColumnNumbers.kredit).Value = Sheet5.Cells(i, ColumnNumbers.kredit).Value
+            .Cells(newRow, ColumnNumbers.saldo).Value = Sheet5.Cells(i, ColumnNumbers.saldo).Value
+            .Cells(newRow, ColumnNumbers.diff).Value = Sheet5.Cells(i, ColumnNumbers.diff).Value
+
+            ' Använd funktionen för att kopiera hyperlänken
+            KopieraHyperlänk Sheet5.Cells(i, ColumnNumbers.bokföringsunderlag), .Cells(newRow, ColumnNumbers.bokföringsunderlag)
+            
+            .Cells(newRow, ColumnNumbers.kontoförändringar).Value = Sheet5.Cells(i, ColumnNumbers.kontoförändringar).Value
+            
+            ' Infoga beräkningar i Verifikationslistan
+            For j = 1 To 6
+                .Cells(newRow, ColumnNumbers.beräkningar + j - 1).Value = Sheet5.Cells(i, ColumnNumbers.beräkningar + j - 1).Value
+            Next j
+        End With
+        
+        newRow = newRow + 1
+    Next i
+End Sub
+
+
+
 Sub RensaBokforingsblad()
     Debug.Print "RensaBokforingsblad startar"
     
@@ -204,8 +301,10 @@ Sub RensaBokforingsblad()
     Dim shp As Shape
     For Each shp In Sheet5.Shapes
         If shp.FormControlType = xlButtonControl Then
-            Debug.Print "Tar bort knapp: " & shp.Name
-            shp.Delete
+            If shp.TopLeftCell.Column = ColumnNumbers.diff Then
+                Debug.Print "Tar bort knapp: " & shp.Name
+                shp.Delete
+             End If
         End If
     Next shp
     
@@ -272,19 +371,22 @@ Function KontrolleraKrav() As Boolean
 
 End Function
 
-
 Sub KopieraGemensammaPoster(lastRow As Long)
     Dim i As Long
+    ' Loopa genom raderna från 3 till lastRow
     For i = 3 To lastRow
+        ' Kopiera värden från rad 2 till nuvarande rad i
         Sheet5.Cells(i, ColumnNumbers.verifikationsserie).Value = Sheet5.Cells(2, ColumnNumbers.verifikationsserie).Value
         Sheet5.Cells(i, ColumnNumbers.verNr).Value = Sheet5.Cells(2, ColumnNumbers.verNr).Value
         Sheet5.Cells(i, ColumnNumbers.registreringsdatum).Value = Sheet5.Cells(2, ColumnNumbers.registreringsdatum).Value
         Sheet5.Cells(i, ColumnNumbers.kostnadsställe).Value = Sheet5.Cells(2, ColumnNumbers.kostnadsställe).Value
         Sheet5.Cells(i, ColumnNumbers.projekt).Value = Sheet5.Cells(2, ColumnNumbers.projekt).Value
         Sheet5.Cells(i, ColumnNumbers.verifikationstext).Value = Sheet5.Cells(2, ColumnNumbers.verifikationstext).Value
+        
+        ' Använd funktionen för att kopiera hyperlänken från rad 2 till nuvarande rad i
+        Call KopieraHyperlänk(Sheet5.Cells(2, ColumnNumbers.bokföringsunderlag), Sheet5.Cells(i, ColumnNumbers.bokföringsunderlag))
     Next i
 End Sub
-
 
 
 Public Sub DeleteRow()
@@ -318,4 +420,42 @@ ErrorHandler:
     MsgBox "Ett fel inträffade: " & Err.Description, vbExclamation
 End Sub
 
+Function KopieraHyperlänk2(källCell As Range, målCell As Range)
+    On Error GoTo ErrorHandler ' Starta felhantering
+    
+    ' Kontrollera om källcellen har en hyperlänk
+    If källCell.Hyperlinks.Count > 0 Then
+        ' Lägg till hyperlänk till målcell
+        målCell.Parent.Hyperlinks.Add Anchor:=målCell, _
+                                      Address:=källCell.Hyperlinks(1).Address, _
+                                      TextToDisplay:=källCell.Text
+    Else
+        ' Kopiera bara värdet om det inte finns någon hyperlänk
+        målCell.Value = källCell.Value
+    End If
+
+    ' Avsluta funktionen normalt
+    Exit Function
+
+ErrorHandler:
+    MsgBox "Ett fel inträffade vid kopiering av hyperlänk: " & Err.Description, vbExclamation
+End Function
+
+Function KopieraHyperlänk(källCell As Range, målCell As Range)
+    If källCell.Hyperlinks.Count > 0 Then
+        ' Använd en mellanlagring av värden för att säkerställa korrekt kopiering
+        Dim länkAddress As String
+        Dim länkText As String
+        
+        länkAddress = källCell.Hyperlinks(1).Address
+        länkText = källCell.Text
+        
+        ' Lägg till hyperlänken till målcell
+        målCell.Parent.Hyperlinks.Add Anchor:=målCell, _
+                                      Address:=länkAddress, _
+                                      TextToDisplay:=länkText
+    Else
+        målCell.Value = källCell.Value
+    End If
+End Function
 
